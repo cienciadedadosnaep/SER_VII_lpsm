@@ -8,17 +8,17 @@ geolocalizacao_escolas <- read_excel("data/Análise - Tabela da lista das escola
                                                                                          "text", "text", "text", "text", "text", 
                                                                                          "text", "text", "text", "text", "numeric", 
                                                                                          "numeric"))
-
+View(geolocalizacao_escolas)
 
 #FONTE:  https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/indicadores-educacionais/nivel-socioeconomico
 INSE_2019_ESCOLAS <- read_excel("data/INSE_2019_ESCOLAS.xlsx", 
-                                     col_types = c("text", "text", "numeric", 
+                                     col_types = c("numeric", "text", "numeric", 
                                                              "text", "numeric", "text", "numeric", 
                                                              "numeric", "numeric", "numeric", 
                                                              "numeric", "text", "numeric", "numeric", 
                                                              "numeric", "numeric", "numeric", 
                                                              "numeric", "numeric", "numeric"))
-
+View(INSE_2019_ESCOLAS)
 mapeamento_salvador <- read_excel("data/mapeamento_clube_ciencia_salvador_regiao_metropolitana.xlsx", 
                                                                           col_types = c("date", "text", "text", 
                                                                                                   "text", "text", "text", "text", "text", 
@@ -26,6 +26,7 @@ mapeamento_salvador <- read_excel("data/mapeamento_clube_ciencia_salvador_regiao
                                                                                                   "text", "text", "text", "text", "numeric"))
 
 
+View(mapeamento_salvador)
 #install.packages("leaflet")
 #install.packages("leaflet.extras")
 library(dplyr)
@@ -36,7 +37,7 @@ library(tidyr)
 
 
 geolocalizacao_escolas %>%
-  drop_na(Latitude, Longitude)%>%
+  #drop_na(Latitude, Longitude)%>%
   leaflet() %>% 
   addTiles() %>% 
   addProviderTiles(providers$OpenStreetMap.DE) %>% 
@@ -44,8 +45,23 @@ geolocalizacao_escolas %>%
   addMarkers(lng=~Longitude,
              lat=~Latitude, popup =~UF)
 
+names(geolocalizacao_escolas)[3] <- c("codigo_inep")
+names(mapeamento_salvador)[18] <- c("codigo_inep")
+names(INSE_2019_ESCOLAS)[1] <- c("codigo_inep")
 
+mapeamento_salvador_localizacao <- mapeamento_salvador |>
+  inner_join(geolocalizacao_escolas) 
+View(mapeamento_salvador_localizacao)
 
+mapeamento_salvador_localizacao %>%
+  #drop_na(Latitude, Longitude)%>%
+  leaflet() %>% 
+  addTiles() %>% 
+  addProviderTiles(providers$OpenStreetMap.DE) %>% 
+  setView(-38.4368023,-12.9144042,10) %>%
+  addMarkers(lng=~Longitude,
+             lat=~Latitude, popup =~UF)
 
-
-
+escolas_desempenho <- mapeamento_salvador |>
+  inner_join(INSE_2019_ESCOLAS) 
+View(escolas_desempenho)
