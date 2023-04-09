@@ -84,6 +84,8 @@ INSE_GEO_SSA %>%
 
 glimpse(mapeamento_salvador)
 
+#ESCOLAS COM CLUBE DE CIENCIAS
+
 escolas_com_clube <- filter(mapeamento_salvador, `3-Sua Unidade Escolar atualmente tem um Clube de Ciências ativo?` == "Sim")
 escolas_com_clube %<>% mutate(`Código INEP` = as.character(`Código INEP`))
 INSE_GEO_CLUBE_SSA <-INSE_GEO_SSA |> 
@@ -102,6 +104,32 @@ INSE_GEO_CLUBE_SSA %>%
              label = ~htmlEscape(Escola))
 #carneiro ribeiro sem inse e raul sá sem localização
 
+#INSE_GEO_CLUBE_SSA
+#INSE_GEO_CLUBE_SSA %<>% mutate(INSE_VALOR_ABSOLUTO = as.numeric(INSE_VALOR_ABSOLUTO))
+#INSE_GEO_CLUBE_SSA %<>% drop_na(INSE_VALOR_ABSOLUTO)
+#mean(INSE_GEO_CLUBE_SSA$INSE_VALOR_ABSOLUTO)
+
+#ESCOLAS QUE RESPONDERAM A PESQUISA
+
+mapeamento_salvador%<>% mutate(`Código INEP` = as.character(`Código INEP`))
+INSE_GEO_RESPOSTA_SSA <-INSE_GEO_SSA |> 
+  inner_join(mapeamento_salvador, by = c("CO_ESCOLA"="Código INEP"))
+
+INSE_GEO_RESPOSTA_SSA %>%
+  drop_na(Latitude, Longitude)%>%
+  leaflet() %>%
+  addTiles() %>%
+  addProviderTiles(providers$OpenStreetMap.DE) %>%
+  setView(-38.4368023,-12.9144042,10) %>%
+  addCircles(lng=~Longitude,
+             lat=~Latitude,
+             radius = ~QTD_ALUNOS_INSE,
+             color = ~factpal(INSE_CLASSIFICACAO),
+             label = ~htmlEscape(Escola))
+
+#INSE_GEO_RESPOSTA_SSA %<>% mutate(INSE_VALOR_ABSOLUTO = as.numeric(INSE_VALOR_ABSOLUTO))
+#INSE_GEO_RESPOSTA_SSA %<>% drop_na(INSE_VALOR_ABSOLUTO)
+#mean(INSE_GEO_RESPOSTA_SSA$INSE_VALOR_ABSOLUTO)
 
 
 
