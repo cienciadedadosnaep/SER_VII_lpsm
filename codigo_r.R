@@ -25,7 +25,27 @@ mapeamento_salvador <- read_excel("data/mapeamento_clube_ciencia_salvador_regiao
                                                 "text", "text", "text", "text", "text", 
                                                 "text", "text", "text", "text", "numeric"))
 
+#Fonte: https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb/resultados
+IDEB_BA_ENSINO_MEDIO <- read_excel("data/divulgacao_ensino_medio_escolas_2021_bahia.xlsx",
+                                                         col_types = c("text", "text", "numeric", 
+                                                                                "numeric", "text", "text", "numeric", 
+                                                                                "numeric", "numeric", "numeric", 
+                                                                                "numeric", "numeric", "numeric", 
+                                                                                "numeric", "numeric", "numeric"))
+IDEB_BA_ANOS_FINAIS <- read_excel("data/divulgacao_anos_finais_escolas_2021_bahia.xlsx", 
+                                                        col_types = c("text", "numeric", "text", 
+                                                                      "numeric", "text", "text", "numeric", 
+                                                                      "numeric", "numeric", "numeric", 
+                                                                      "numeric", "numeric", "numeric", 
+                                                                      "numeric", "numeric", "numeric"))
+View(divulgacao_anos_finais_escolas_2021_bahia)
 
+
+
+
+View(IDEB_BA_ENSINO_MEDIO)
+IDEB_BA_ENSINO_MEDIO %<>% mutate(`Código da Escola` = as.character(`Código da Escola`))
+IDEB_BA_ANOS_FINAIS %<>% mutate(`Código da Escola` = as.character(`Código da Escola`))
 View(mapeamento_salvador)
 #install.packages("leaflet")
 #install.packages("leaflet.extras")
@@ -62,6 +82,7 @@ library(htmltools)
 
 # Conversao numeric to character
 geolocalizacao_escolas %<>% mutate(`Código INEP` = as.character(`Código INEP`))
+
 
 INSE_GEO_SSA<- full_join(x = INSE_2019_ESCOLAS_SSA,
                          y = geolocalizacao_escolas,
@@ -103,6 +124,11 @@ INSE_GEO_CLUBE_SSA %>%
              color = ~factpal(INSE_CLASSIFICACAO),
              label = ~htmlEscape(Escola))
 #carneiro ribeiro sem inse e raul sá sem localização
+#INse 4 -azul clarinho
+#Inse 2 - roxo
+#inse 3 - azul escuro
+#INSE 7 - AMARELO
+#INSE 5 - VERDE
 
 #INSE_GEO_CLUBE_SSA
 #INSE_GEO_CLUBE_SSA %<>% mutate(INSE_VALOR_ABSOLUTO = as.numeric(INSE_VALOR_ABSOLUTO))
@@ -126,6 +152,37 @@ INSE_GEO_RESPOSTA_SSA %>%
              radius = ~QTD_ALUNOS_INSE,
              color = ~factpal(INSE_CLASSIFICACAO),
              label = ~htmlEscape(Escola))
+
+
+#------------------------ideb das escolas-------------------------------------
+
+IDEB_Respostas_ENSINO_MEDIO <-IDEB_BA_ENSINO_MEDIO |> 
+  inner_join( mapeamento_salvador, by = c("Código da Escola"="Código INEP"))
+GEO_IDEB_Respostas_ENSINO_MEDIO <-IDEB_Respostas_ENSINO_MEDIO |> 
+  inner_join( geolocalizacao_escolas, by = c("Código da Escola"="Código INEP"))
+
+IDEB_Respostas_ANOS_FINAIS <-IDEB_BA_ENSINO_MEDIO |> 
+  inner_join( INSE_GEO_RESPOSTA_SSA, by = c("Código da Escola"="Código INEP"))
+
+GEO_IDEB_Respostas_ENSINO_MEDIO %>%
+  drop_na(Latitude, Longitude)%>%
+  leaflet() %>%
+  addTiles() %>%
+  addProviderTiles(providers$OpenStreetMap.DE) %>%
+  setView(-38.4368023,-12.9144042,10) %>%
+  addCircles(lng=~Longitude,
+             lat=~Latitude,
+             radius = ~`Indicador de Rendimento (P)`,
+             label = ~htmlEscape(`Nome da Escola`))
+
+#IDEB_ENSINO_MEDIO<- full_join(x = IDEB_BA_ANOS_FINAIS,
+ #                        y = mapeamento_salvador,
+  #                       by = c("Código da Escola"="Código INEP"))
+
+
+
+
+
 
 #INSE_GEO_RESPOSTA_SSA %<>% mutate(INSE_VALOR_ABSOLUTO = as.numeric(INSE_VALOR_ABSOLUTO))
 #INSE_GEO_RESPOSTA_SSA %<>% drop_na(INSE_VALOR_ABSOLUTO)
